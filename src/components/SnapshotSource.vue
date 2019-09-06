@@ -3,12 +3,14 @@
         <div class="SnapshotSource-content has-background-grey-lighter">
             <iframe 
                 ref="source"
-                id="source" 
-                :src="buildSnapshotUrl(snapshotId)" 
+                id="source"  
+                :src="snapshotUrl"
+                :key="'codepress-iframe-'+snapshotUrl"
                 :width="viewportSize.width" 
                 frameborder="0"
                 @load="onIframeLoaded"
                 v-show="loaded"
+                sandbox="allow-scripts allow-same-origin"
             >
             </iframe>
         </div>
@@ -58,13 +60,11 @@ export default {
     props: ['snapshotId', 'snapshotScrollPosition', 'viewportSize', 'highlight'],
     data: function() {
         return {
-            loaded: false
+            loaded: false,
+            snapshotUrl: `/api/snapshots/html/${this.snapshotId}`
         }
     },
     methods: {
-        buildSnapshotUrl(snapshotId) {
-            return `/api/snapshots/html/${snapshotId}`;
-        },
 
         getIframeDoc() {
             return this.$refs.contentDocument || (this.$refs.source.contentWindow && this.$refs.source.contentWindow.document);
@@ -80,7 +80,6 @@ export default {
 
         onIframeLoaded() {
             this.loaded = true;
-
             if (this.mustScrollIframe()) {
                 // Only page to vertical position
                 this.$refs.source.contentWindow.scrollTo(0, this.$props.snapshotScrollPosition.y);
